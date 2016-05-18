@@ -1,0 +1,11 @@
+<% if flash[:notice] -%>
+  <p class='notice'><%=h flash[:notice] %></p>
+<% end -%>
+
+<h1>Show Me the Money</h1>
+<h3>Please upload a tab-delimited purchase file...</h3>
+<%= form_tag({ action: :datafile }, { multipart: true }) do %>
+  <%= file_field_tag "datafile" %>
+  <%= submit_tag "Upload" %>
+<% end %>
+

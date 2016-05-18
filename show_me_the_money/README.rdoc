@@ -1,0 +1,70 @@
+== Overview
+
+This Rails app takes a data input file containing purchase information (tab-delimited), inserts records into a database as appropriate, and returns the total sum of purchases to the user.
+
+I chose to focus on the core problem, so, indeed, the UI is quite basic, and there is no authentication. The core problem involved deciding on the appropriate data model and writing code and thorough tests (using rspec).
+
+== Installation/Set-up
+
+The app uses Ruby 1.9.3 (specified in the Gemfile), and Rails 3.2.18 (also specified in the Gemfile). The app is in the directory 'show_me_the_money'. Other gems added (development and test only): rspec, pry, capybara, factory girl, faker.
+
+If Ruby 1.9.3 is already installed, please create a gemset as appropriate using rvm.
+
+Assuming rvm, but no 1.9.3, please do:
+
+$ rvm install 1.9.3
+$ cd show_me_the_money
+$ bundle install
+$ rake db:migrate
+
+and if desired:
+
+$ rake db:test:prepare
+$ rspec spec/
+
+== Data Model
+
+The data comes with the following fields:
+purchaser name, item description, item price, purchase count, merchant address, merchant name
+
+There are two test files in /spec/fixtures/files (including the original example) which show the format of data.
+
+There are various ways one could have determined the appropriate data model, but I chose the following:
+
+Items
+  fields: description (string), price (integer)
+  has many: purchases
+  unique based on description and price combination
+
+Merchant
+  fields: name (string), address (string)
+  has many: purchases
+  unique based on name
+
+Purchase
+  fields: purchaser_name (string), count (integer), item_id (integer), merchant_id (integer)
+  belongs to: item
+  belongs to: merchant
+
+Note: price is stored as integer (in cents), to avoid issues with floating point calculations (http://archive.railsforum.com/viewtopic.php?id=15359, http://stackoverflow.com/questions/5072610/ruby-and-money-in-a-rails-app-how-to-store-money-values-in-the-db, et al.)
+
+I chose not to use the 'money' gem, although, given more time, I feel that probably would have been the appropriate choice: https://github.com/RubyMoney/money
+
+It would have been possible to associate items with merchants and to have separate "purchasers", but it's not entirely certain that the data requires that.
+
+Migrations (db/migrations) set up db (one migration file per table). Database is the default sqlite3 for both development and test environments. No production database has been set up, and the app is not production-ready.
+
+== Tests
+
+Tests:
+  unit tests of models (spec/models), including Purchase.parse_data (which takes file input as array of arrays of data and inserts into db, returns sum of purchases).
+  controller test (spec/controllers): check that routes work as planned.
+  feature test (spec/features): check that file upload returns appropriate response (using the two test files mentioned above)
+
+FactoryGirl is used to create models for model specs. Faker is used extensively to generate test data.
+
+I considered using Rantly (https://github.com/hayeah/rantly), which is a Ruby port of Haskell's Quick Check (http://www.haskell.org/haskellwiki/Introduction_to_QuickCheck1), to generate test data, but considered it outside of the scope of this exercise.
+
+== In Closing
+
+I hope this meets the requirements, and that you consider it a sane and elegant solution to the problem!
